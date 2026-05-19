@@ -13,7 +13,12 @@ const getItems = (req, res) => {
 const getItemById = (req, res) => {
   const id = req.params.id;
   Item.findById(id)
-    .then((result) => res.status(200).json(result))
+    .then((result) => {
+      if (!result) {
+        return res.status(404).json({ message: "Item not found" });
+      }
+      res.status(200).json(result);
+    })
     .catch((err) => res.status(500).json({ error: err.message }));
 };
 
@@ -27,13 +32,15 @@ const createItem = (req, res) => {
 
 const updateItem = (req, res) => {
   const id = req.params.id;
-  const { title, director, year, genre, rating } = req.body;
+  const { name, description, price } = req.body;
 
-  if (!title || !year) {
-    return res.status(400).json({ message: "Title and year are required" });
+  if (!name || !description || !price) {
+    return res
+      .status(400)
+      .json({ message: "Name, description, and price are required" });
   }
 
-  const data = { title, director, year, genre, rating };
+  const data = { name, description, price };
 
   Item.findByIdAndUpdate(id, data, { new: true })
     .then((result) => {
@@ -47,7 +54,12 @@ const updateItem = (req, res) => {
 
 const deleteItem = (req, res) => {
   Item.findByIdAndDelete(req.params.id)
-    .then((result) => res.status(200).json(result))
+    .then((result) => {
+      if (!result) {
+        return res.status(404).json({ message: "Item not found" });
+      }
+      res.status(200).json({ message: "Item deleted successfully" });
+    })
     .catch((err) => res.status(500).json({ error: err.message }));
 };
 
