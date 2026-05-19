@@ -1,20 +1,15 @@
-// getItems, getItemById, createItem, updateItem, deleteItem
-const mongoose = require("mongoose");
-const Item = require("../models/item");
+const itemServices = require("../services/itemServices");
 
 const getItems = (req, res) => {
-  Item.find()
-    .sort({ createdAt: -1 })
+  itemServices
+    .getAllItems()
     .then((result) => res.status(200).json(result))
     .catch((err) => res.status(500).json({ error: err.message }));
 };
 
 const getItemById = (req, res) => {
-  const id = req.params.id;
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ message: "Invalid ID format" });
-  }
-  Item.findById(id)
+  itemServices
+    .getItemById(req.params.id)
     .then((result) => {
       if (!result) {
         return res.status(404).json({ message: "Item not found" });
@@ -25,20 +20,14 @@ const getItemById = (req, res) => {
 };
 
 const createItem = (req, res) => {
-  const item = new Item(req.body);
-  item
-    .save()
+  const { name, description, price } = req.body;
+  itemServices
+    .createItem({ name, description, price })
     .then((result) => res.status(201).json(result))
     .catch((err) => res.status(500).json({ error: err.message }));
 };
 
 const updateItem = (req, res) => {
-  const id = req.params.id;
-
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ message: "Invalid ID format" });
-  }
-
   const { name, description, price } = req.body;
 
   if (!name || !description || !price) {
@@ -47,9 +36,8 @@ const updateItem = (req, res) => {
       .json({ message: "Name, description, and price are required" });
   }
 
-  const data = { name, description, price };
-
-  Item.findByIdAndUpdate(id, data, { new: true })
+  itemServices
+    .updateItem(req.params.id, { name, description, price })
     .then((result) => {
       if (!result) {
         return res.status(404).json({ message: "Item not found" });
@@ -60,13 +48,8 @@ const updateItem = (req, res) => {
 };
 
 const deleteItem = (req, res) => {
-  const id = req.params.id;
-
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ message: "Invalid ID format" });
-  }
-
-  Item.findByIdAndDelete(req.params.id)
+  itemServices
+    .deleteItem(req.params.id)
     .then((result) => {
       if (!result) {
         return res.status(404).json({ message: "Item not found" });
