@@ -1,6 +1,5 @@
 // getItems, getItemById, createItem, updateItem, deleteItem
-
-const { nanoid } = require("nanoid");
+const mongoose = require("mongoose");
 const Item = require("../models/item");
 
 const getItems = (req, res) => {
@@ -12,6 +11,9 @@ const getItems = (req, res) => {
 
 const getItemById = (req, res) => {
   const id = req.params.id;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid ID format" });
+  }
   Item.findById(id)
     .then((result) => {
       if (!result) {
@@ -32,6 +34,11 @@ const createItem = (req, res) => {
 
 const updateItem = (req, res) => {
   const id = req.params.id;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid ID format" });
+  }
+
   const { name, description, price } = req.body;
 
   if (!name || !description || !price) {
@@ -53,6 +60,12 @@ const updateItem = (req, res) => {
 };
 
 const deleteItem = (req, res) => {
+  const id = req.params.id;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid ID format" });
+  }
+
   Item.findByIdAndDelete(req.params.id)
     .then((result) => {
       if (!result) {
